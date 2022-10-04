@@ -1,4 +1,6 @@
 .global _start
+result:		.space 144
+
 input_image: .word 1057442138,  2410420899, 519339369,  2908788659, 1532551093, 4249151175, 4148718620, 788746931,  3777110853, 2023451652
 			 .word 3000595192,   1424215634, 3130581119, 3415585405, 2359913843, 1600975764, 1368061213, 2330908780, 3460755284, 464067332
 			 .word 2358850436,   1191202723, 2461113486, 3373356749, 3070515869, 4219460496, 1464115644, 3200205016, 1316921258, 143509283
@@ -25,9 +27,9 @@ j:	.word 0
 
 length: .word 25
 
-output: .word 36
+
 _start:
-	LDR A1, =output
+	LDR A1, =result
 	LDR A2, =input_image
 	LDR A3, length
 	MOV A4, #1
@@ -218,7 +220,7 @@ arrayRSorted:
 	BX LR
 	
 getmedian:
-	PUSH 	{V1-V5}
+	PUSH 	{V1-V8}
 	LDR		V1, =array_space_red
 	LDR		V2, =array_space_green
 	LDR		V3, =array_space_blue
@@ -234,3 +236,4 @@ getmedian:
 	ADD		V5, V5, V6
 	ADD		V5, V5, V7
 	ADD		V5, V5, V8
+	STR		V5, [A1, #0]
