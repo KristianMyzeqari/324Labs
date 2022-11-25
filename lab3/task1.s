@@ -71,22 +71,48 @@ done1:
 		
 
 VGA_draw_point_ASM:
-		push {r0, r1, r2, r3, r4}
+		push {r0, r1, r2, r3, r4, r5, r6}
 		ldr r4, =pixel_memory
+		ldr r5, n1
+		ldr r6, n2
+		
+		cmp r0, #0
+		blt finish
+		cmp r0, r5
+		bgt finish
 		mov r0, r0, lsl #1
+		
+		cmp r1, #0
+		blt finish
+		cmp r1, r6
+		bgt finish
 		mov r1, r1, lsl #10
+		
 		add r3, r1, r0
 		strh r2, [r4, r3]
-		pop {r0, r1, r2, r3, r4}
+finish:	pop {r0, r1, r2, r3, r4, r5, r6}
 		bx lr
 
 VGA_write_char_ASM:
-		push {r0, r1, r2, r3, r4}
+		push {r0, r1, r2, r3, r4, r5, r6}
 		ldr r4, =char_memory
+		ldr r5, n3
+		ldr r6, n4
+		
+		cmp r0, #0
+		blt fini1
+		cmp r0, r5
+		bgt fini1
+		
+		cmp r1, #0
+		blt fini1
+		cmp r1, r6
+		bgt fini1
 		mov r1, r1, lsl #7
+		
 		add r3, r1, r0
 		strb r2, [r4, r3]
-		pop {r0, r1, r2, r3, r4}
+fini1:	pop {r0, r1, r2, r3, r4, r5, r6}
 		bx lr
 
 
