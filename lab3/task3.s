@@ -1,5 +1,7 @@
 .global _start
 
+betterName:	.space 4
+
 input_mazes:// First Obstacle Course
             .word 2,1,0,1,1,1,0,0,0,1,0,1
             .word 0,1,0,1,1,1,0,0,0,1,0,1
@@ -91,7 +93,6 @@ input_mazes:// First Obstacle Course
             .word 1,0,1,1,1,0,1,1,1,0,1,0
             .word 1,0,0,0,0,0,1,0,0,0,0,3
 
-
 n1:		.word 319
 n2:		.word 239
 
@@ -109,15 +110,77 @@ size:	.word 432
 .equ    ps2_memory, 0xff200100
 
 _start:
-        bl      VGA_fill_ASM
+		bl		VGA_clear_pixelbuff_ASM
+		bl		VGA_clear_charbuff_ASM
+		
+		bl      VGA_fill_ASM
 		bl		draw_grid_ASM
+		
+		ldr r11, =betterName
+		
+		read_PS2_data_ASM:
+		ldr r4, =ps2_memory
+		ldr r5, [r4]
+		lsr r5, r5, #15
+		tst r5, #1
+		bne isOne
+		mov r0, #0
+		b read_PS2_data_ASM
+isOne:	ldrb r6, [r4]
+		strb r6, [r11]
+		mov r0, #1
+		
+		cmp r6, #0x16
+		bne	number2
+		mov r5, #1
+		b 	selected
+		
+number2:
+		cmp r6, #0x1e
+		bne number3
+		mov r5, #2
+		b selected
+number3:
+		cmp r6, #0x26
+		bne number4
+		mov r5, #3
+		b selected
+number4:
+		cmp r6, #0x25
+		bne number5
+		mov r5, #4
+		b selected
+number5:
+		cmp r6, #0x2e
+		bne number6
+		mov r5, #5
+		b selected
+number6:
+		cmp r6, #0x36
+		bne number7
+		mov r5, #6
+		b selected
+number7:
+		cmp r6, #0x3d
+		bne number8
+		mov r5, #7
+		b selected
+number8:
+		cmp r6, #0x3e
+		bne number9
+		mov r5, #8
+		b selected
+number9:
+		cmp r6, #0x46
+		bne read_PS2_data_ASM
+		mov r5, #9
+		b selected
+		
+selected:
+		mov r0, #0
 		bl		draw_ampersand_ASM
 		bl		draw_exit_ASM
-		
-		//mov		r6, #39
-		//mov		r7, #13
-		//bl 		draw_obstacles_ASM
-		mov		r5, #8
+
 		bl		fill_grid_ASM
 end:
         b       end
@@ -252,11 +315,11 @@ done2:
 draw_grid_ASM:
 		push {r0, r1, r3}
 		mov r0, #0
-		mov r3, #26
-forx:	cmp r0, #312
+		mov r3, #24
+forx:	cmp r0, #288
 		bgt next
 		mov r1, #0
-forxy:	cmp r1, #234
+forxy:	cmp r1, #216
 		bgt lineDone
 		push {lr}
 		bl	VGA_draw_point_ASM
@@ -268,11 +331,11 @@ lineDone:
 		b	forx
 
 next:	mov r1, #0
-fory:	mov r3, #26
-		cmp r1, #234
+fory:	mov r3, #24
+		cmp r1, #216
 		bgt linesDone2
 		mov r0, #0
-foryx:	cmp r0, #312
+foryx:	cmp r0, #288
 		bgt lineDone2
 		push {lr}
 		bl	VGA_draw_point_ASM
@@ -299,26 +362,26 @@ draw_ampersand_ASM:
 
 draw_exit_ASM:
 		push {r0, r1, r2}
-		mov r0, #73
-		mov r1, #55
+		mov r0, #67
+		mov r1, #51
 		mov r2, #69
 		push {lr}
 		bl VGA_write_char_ASM
 		pop {lr}
-		mov r0, #74
-		mov r1, #55
+		mov r0, #68
+		mov r1, #51
 		mov r2, #88
 		push {lr}
 		bl VGA_write_char_ASM
 		pop {lr}
-		mov r0, #75
-		mov r1, #55
+		mov r0, #69
+		mov r1, #51
 		mov r2, #73
 		push {lr}
 		bl VGA_write_char_ASM
 		pop {lr}
-		mov r0, #76
-		mov r1, #55
+		mov r0, #70
+		mov r1, #51
 		mov r2, #84
 		push {lr}
 		bl VGA_write_char_ASM
@@ -328,13 +391,13 @@ draw_exit_ASM:
 
 draw_obstacles_ASM:
 		push {r0, r1, r2, r3, r4, r5, r6, r7}
-		sub r6, #13		//original x border
+		sub r6, #12		//original x border
 		mov r4, r6
-		sub r7, #13		//original y border
+		sub r7, #12		//original y border
 		mov r5, r7
 		
-		add r2, r6, #26 //max x coordinate
-		add r3, r7, #26 //max y coordinate
+		add r2, r6, #24 //max x coordinate
+		add r3, r7, #24 //max y coordinate
 		
 xtravel: cmp r4, r2
 		 bgt blockDone
@@ -365,11 +428,11 @@ fill_grid_ASM:
 		ldr r0, size
 		mul r0, r0, r5
 		add r3, r3, r0
-		ldr r10, =#299
-		mov r7, #13
-xgrid:	cmp r7, #247
+		ldr r10, =#276
+		mov r7, #12
+xgrid:	cmp r7, #228
 		bge	mazeF
-		mov r6, #13
+		mov r6, #12
 ygrid:	cmp r6, r10
 		bgt	rowF
 		ldr r9, [r3], #4
@@ -378,15 +441,14 @@ ygrid:	cmp r6, r10
 		cmp r9, #1
 		bne nexta
 		push {lr}
-		bl draw_obstacles_ASM 
+		bl draw_obstacles_ASM
 		pop {lr}
-nexta:	add r6, #26
+nexta:	add r6, #24
 		b ygrid
-rowF:	add r7, #26
+rowF:	add r7, #24
 		b xgrid
 
 mazeF:	pop {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10}
 		bx lr
 		
-		
-		
+

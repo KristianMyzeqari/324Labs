@@ -120,13 +120,14 @@ fini1:	pop {r0, r1, r2, r3, r4, r5, r6}
 read_PS2_data_ASM:
 		push {r4, r5, r6}
 		ldr r4, =ps2_memory
-		lsr r5, r4, #15
+		ldr r5, [r4]
+		lsr r5, r5, #15
 		tst r5, #1
-		bgt isOne
+		bne isOne
 		b	end2
 isOne:	ldrb r6, [r4]
+		strb r6, [r0]
 		mov r0, #1
-		strb r4, [r0]
 		pop {r4, r5, r6}
 		bx lr
 		
