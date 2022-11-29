@@ -23,11 +23,11 @@ VGA_clear_pixelbuff_ASM:
 
 outerFor:
 		CMP r5, #0
-		BLE done
+		blt done
 		ldr r6, n2 //y axis max
 innerFor:
 		CMP r6, #0
-		BLE doneInner
+		blt doneInner
 		mov r0, r5
 		mov r1, r6
 		push {lr}
